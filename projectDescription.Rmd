@@ -1,0 +1,95 @@
+---
+title: "Climate Science and shit"
+output: html_notebook
+---
+
+First and foremost: let us import all necessary libraries.
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+# Idée : étudier l'évolution des températures dans le monde
+
+Table de données : "Climate Change: Earth Surface Temperature Data" (tiré de Berkeley Earth)
+Lien : https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data
+
+## Première idée : faire une carte du monde avec les températures moyennes par pays
+
+* Curseur qui glisse par mois et par année ?
+* Curseur qui glisse uniquement par année, avec la température moyenne ?
+* Curseur qui glisse par année, avec la différence entre la température moyenne sur l'année et la température moyenne globale (moyenne qui se fait entre 1950 et 1900, ou bien moyenne totale) ?
+
+## Deuxième idée : mettre en place des courbes pour observer l'évolution des températures moyennes par pays en fonction du temps
+
+### Dans un premier temps, étude globale, à l'échelle du globe
+
+
+#### Premier test : séparer les dates en année, mois, jour, puis supprimer les jours, et enfin sélectionner à partir de 1800 (pour avoir des données plus sûres)
+```{r}
+globalTemperatures <- read.csv("globalTemperatures.csv")
+globalTemperatures$dt <- as.character(globalTemperatures$dt)
+globalTemperatures <- globalTemperatures %>%
+  separate("dt", c("year", "month", "day"), sep = "-", remove = TRUE) %>%
+  select(-day)
+
+globalTemperatures$year <- as.numeric(globalTemperatures$year)
+
+globalTemperatures <- globalTemperatures %>%
+  filter(year >= 1750)
+
+```
+
+
+#### Deuxième étape : on va faire la moyenne par an
+```{r}
+globalTemperaturesYear <- globalTemperatures %>%
+  group_by(year) %>%
+  summarise(LandAverageTemperature = mean(LandAverageTemperature))
+
+View(globalTemperaturesYear)
+
+```
+
+#### Troisième étape : on ajoute une colonne avec la moyenne étalée sur dix ans
+```{r}
+globalTemperaturesYear$TenYearMovingAverage <- NA
+
+for (i in c(10:length(globalTemperaturesYear$TenYearMovingAverage))) {
+  globalTemperaturesYear$TenYearMovingAverage[i] <-
+    mean(globalTemperaturesYear$LandAverageTemperature[(i-9):i])
+}
+
+```
+
+
+#### Quatrième étape : on trace un graphe !
+```{r}
+ggplot(data = globalTemperaturesYear,
+       aes(x = year, y = TenYearMovingAverage)) +
+  geom_line(colour = "red", size = 1.5) +
+  geom_point(aes(x = year, y = LandAverageTemperature),
+             colour = "dark blue",
+             size = 0.5) +
+  labs(x = "Year", y = "Temperature", title = "Climate")
+  
+```
+
+#### Petite conclusion
+De façon assez indéniable, on constate une augmentation à partir de 1950 ...
+
+
+
+
+* Dans un premier temps, on pourrait avoir un graphique global
+* Ensuite, on pourrait avoir une carte avec tous les pays du monde (ou bien tous les continents, mais ça impliquerait de modifier un peu la table), et cliquer sur un pays pourrait faire apparaître le graphique correspondant
+
+## Troisième idée : trouver quelques corrélations
+* Lien entre les températures dans un certain pays et les famines ? (source données : https://ourworldindata.org/famines/)
+* Lien entre températures et prix de la nourriture ? (source données à trouver)
+* Lien entre températures et mortalité ?
+* Lien entre (température - température moyenne) et croissance du PIB ?
+Juste quelques pistes ...
+
+## Quatrième idée : étudier la chaleur comme prédicteur
+* La misère est-elle moins pénible au soleil ? Lien entre indice global de bonheur et chaleur
