@@ -3,10 +3,15 @@ title: "Climate Science and shit"
 output: html_notebook
 ---
 
+Example: model for finished product
+https://www.showmeshiny.com/wpp-2015-explorer/
+
+
 First and foremost: let us import all necessary libraries.
 ```{r}
 library(tidyverse)
 library(ggplot2)
+library(ggthemes)
 ```
 
 # Idée : étudier l'évolution des températures dans le monde
@@ -69,15 +74,38 @@ ggplot(data = globalTemperaturesYear,
        aes(x = year, y = TenYearMovingAverage)) +
   geom_line(colour = "red", size = 1.5) +
   geom_point(aes(x = year, y = LandAverageTemperature),
-             colour = "dark blue",
-             size = 0.5) +
-  labs(x = "Year", y = "Temperature", title = "Climate")
+             colour = "dark grey",
+             size = 0.2) +
+  labs(x = "Year", y = "Temperature", title = "Climate") +
+  geom_ribbon(aes(x = year, ymin = LandAverageTemperature, ymax = TenYearMovingAverage), fill = "grey") +
+  theme_economist()
   
 ```
 
 #### Petite conclusion
 De façon assez indéniable, on constate une augmentation à partir de 1950 ...
 
+
+#### Faisons quelques petits tests supplémentaires
+```{r}
+globalTemperaturesBefore1900 <- globalTemperaturesYear %>%
+  filter(year <= 1900)
+averageTemp <- mean(globalTemperaturesBefore1900$LandAverageTemperature[!is.na(globalTemperaturesBefore1900$LandAverageTemperature)])
+
+ggplot(data = globalTemperaturesYear,
+       aes(x = year, y = TenYearMovingAverage - averageTemp)) +
+  geom_line(colour = "dark grey", size = 1.5) +
+  labs(x = "Year", y = "Temperature", title = "Temperature variation with relation to the average (until 1900)") +
+  theme_gdocs() +
+  geom_ribbon(data = globalTemperaturesYear %>% filter(TenYearMovingAverage > averageTemp),
+    aes(x = year, ymax = TenYearMovingAverage - averageTemp, ymin = 0), fill = "red") +
+  geom_ribbon(data = globalTemperaturesYear %>% filter(TenYearMovingAverage < averageTemp),
+    aes(x = year, ymax = TenYearMovingAverage - averageTemp, ymin = 0), fill = "blue") +
+  theme_economist()
+
+
+# Idéalement, il faudrait que la zone en haut soit en rouge, et celle en bas en bleu ...
+```
 
 
 
