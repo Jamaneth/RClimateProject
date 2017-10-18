@@ -52,8 +52,6 @@ globalTemperaturesYear <- globalTemperatures %>%
   group_by(year) %>%
   summarise(LandAverageTemperature = mean(LandAverageTemperature))
 
-View(globalTemperaturesYear)
-
 ```
 
 #### Troisième étape : on ajoute une colonne avec la moyenne étalée sur dix ans
@@ -108,9 +106,65 @@ ggplot(data = globalTemperaturesYear,
 ```
 
 
+### Petit truc par pays, désormais
 
 * Dans un premier temps, on pourrait avoir un graphique global
 * Ensuite, on pourrait avoir une carte avec tous les pays du monde (ou bien tous les continents, mais ça impliquerait de modifier un peu la table), et cliquer sur un pays pourrait faire apparaître le graphique correspondant
+
+#### On remet les dates en forme
+```{r}
+tempsByCountry <- read.csv("GlobalLandTemperaturesByCountry.csv")
+
+tempsByCountry$dt <- as.character(tempsByCountry$dt)
+tempsByCountry <- tempsByCountry %>%
+  separate("dt", c("year", "month", "day"), sep = "-", remove = TRUE) %>%
+  select(-day)
+
+tempsByCountry$year <- as.numeric(tempsByCountry$year)
+
+
+View(tempsByCountry)
+```
+
+#### On fait la moyenne par an
+```{r}
+tempsByCountry <- tempsByCountry %>%
+  group_by(year, Country) %>%
+  summarise(AverageTemperature = mean(AverageTemperature)) %>%
+  arrange(Country)
+
+```
+
+#### On ajoute la colonne avec la moyenne étalée sur dix ans
+```{r}
+tempsByCountry$TenYearAvg = NA
+
+for (i in c(10:length(tempsByCountry$TenYearAvg))) {
+  if(tempsByCountry$Country[i-9] == tempsByCountry$Country[i]) {
+  tempsByCountry$TenYearAvg[i] <-
+    mean(tempsByCountry$AverageTemperature[(i-9):i])
+  }
+}
+
+View(tempsByCountry)
+```
+
+
+#### Quatrième étape : on trace un graphe !
+```{r}
+ggplot(data = tempsByCountry %>% filter(Country == "Saudi Arabia"),
+       aes(x = year, y = TenYearAvg)) +
+  geom_line(colour = "red", size = 1.5) +
+  geom_point(aes(x = year, y = AverageTemperature),
+             colour = "dark grey",
+             size = 0.2) +
+  labs(x = "Year", y = "Temperature", title = "Climate") +
+  geom_ribbon(aes(x = year, ymin = AverageTemperature, ymax = TenYearAvg), fill = "grey") +
+  theme_economist()
+  
+```
+
+
 
 ## Troisième idée : trouver quelques corrélations
 * Lien entre les températures dans un certain pays et les famines ? (source données : https://ourworldindata.org/famines/)
