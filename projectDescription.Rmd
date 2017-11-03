@@ -94,11 +94,9 @@ ggplot(data = globalTemperaturesYear,
        aes(x = year, y = TenYearMovingAverage - averageTemp)) +
   geom_line(colour = "dark grey", size = 1.5) +
   labs(x = "Year", y = "Temperature", title = "Temperature variation with relation to the average (until 1900)") +
-  theme_gdocs() +
-  geom_ribbon(data = globalTemperaturesYear %>% filter(TenYearMovingAverage > averageTemp),
+  geom_ribbon(data = globalTemperaturesYear,
     aes(x = year, ymax = TenYearMovingAverage - averageTemp, ymin = 0), fill = "red") +
-  geom_ribbon(data = globalTemperaturesYear %>% filter(TenYearMovingAverage < averageTemp),
-    aes(x = year, ymax = TenYearMovingAverage - averageTemp, ymin = 0), fill = "blue") +
+
   theme_economist()
 
 
@@ -135,35 +133,44 @@ tempsByCountry <- tempsByCountry %>%
 
 ```
 
+#### On filtre un seul pays dans la liste
+```{r}
+selectedCountry = "Spain"
+tempsSelectCountry = tempsByCountry %>% filter(Country == selectedCountry)
+```
+
+
 #### On ajoute la colonne avec la moyenne étalée sur dix ans
 ```{r}
-tempsByCountry$TenYearAvg = NA
+tempsSelectCountry$TenYearAvg = NA
 
-for (i in c(10:length(tempsByCountry$TenYearAvg))) {
-  if(tempsByCountry$Country[i-9] == tempsByCountry$Country[i]) {
-  tempsByCountry$TenYearAvg[i] <-
-    mean(tempsByCountry$AverageTemperature[(i-9):i])
-  }
+for (i in c(10:length(tempsSelectCountry$TenYearAvg))) {
+  tempsSelectCountry$TenYearAvg[i] <- mean(tempsSelectCountry$AverageTemperature[(i-9):i])
 }
 
-View(tempsByCountry)
+View(tempsSelectCountry)
 ```
 
 
 #### Quatrième étape : on trace un graphe !
 ```{r}
-ggplot(data = tempsByCountry %>% filter(Country == "Saudi Arabia"),
+
+ggplot(data = tempsSelectCountry,
        aes(x = year, y = TenYearAvg)) +
   geom_line(colour = "red", size = 1.5) +
   geom_point(aes(x = year, y = AverageTemperature),
              colour = "dark grey",
              size = 0.2) +
-  labs(x = "Year", y = "Temperature", title = "Climate") +
+  labs(x = "Year", y = "Temperature", title = paste("Climate in", selectedCountry)) +
   geom_ribbon(aes(x = year, ymin = AverageTemperature, ymax = TenYearAvg), fill = "grey") +
   theme_economist()
   
 ```
 
+
+```{r}
+
+```
 
 
 ## Troisième idée : trouver quelques corrélations
@@ -174,4 +181,3 @@ ggplot(data = tempsByCountry %>% filter(Country == "Saudi Arabia"),
 Juste quelques pistes ...
 
 ## Quatrième idée : étudier la chaleur comme prédicteur
-* La misère est-elle moins pénible au soleil ? Lien entre indice global de bonheur et chaleur
