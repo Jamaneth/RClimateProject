@@ -40,7 +40,11 @@ server <- function(input, output) {
     x <- tempsByCountry %>% filter(year == input$selectYear)
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                  colorvar = "TenYearAvg",
-                 options = list(colorAxis ="{colors:['blue', 'red']}"))
+                 options = list(
+                   colorAxis ="{
+                   values:[-20, 30],
+                   colors:['blue', 'red']}"))
+
   })
 
      

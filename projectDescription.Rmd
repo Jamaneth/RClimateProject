@@ -193,9 +193,7 @@ Juste quelques pistes ...
 ```
 
 ```{r}
-ct = 26
-View(tempsByCountry %>% filter(year == 1920) %>%
-  filter(TenYearAvg > ct, TenYearAvg < ct + 1))
+max(tempsByCountry[,4], na.rm = TRUE)
 ```
 
 ```{r}
