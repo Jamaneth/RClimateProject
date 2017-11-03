@@ -10,20 +10,36 @@
 library(shiny)
 library(googleVis)
 
-# Define UI for application that draws a histogram
 ui <- fluidPage(
    
-   # Application title
    titlePanel("Temperatures per country"),
    
-   # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
+        
+        # Slider for the year selected
         sliderInput("selectYear",
                     "Year selected:",
                     min = 1900,
                     max = 2012,
-                    value = 1900)
+                    value = 1900,
+                    sep = ""),
+        
+        # Scrolling menu to choose a type of map
+        selectInput(
+          inputId = "selectGraph",
+          label = "Choose: ",
+          choices = c("Map Temperature" = 1, "Temperature Difference" = 2)),
+        
+        # Indicating the data source
+        br(),
+        h4("Data source"),
+        p("Berkeley Earth,",
+          a("Climate Change: Earth Surface Temperature Data",
+            href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
+          "(includes data on global temperatures since 1750)")
+        
+        
       ),
             
       # Show a plot of the generated distribution
@@ -41,7 +57,7 @@ server <- function(input, output) {
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                  colorvar = "TenYearAvg",
                  options = list(
-                   backgroundColor = "#C6E8FF",
+                   backgroundColor = "#FFFFFF",
                    defaultColor = "white",
                    colorAxis ="{
                    values:[-20, 30],
