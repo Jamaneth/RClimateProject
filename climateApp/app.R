@@ -8,22 +8,17 @@
 #
 
 library(shiny)
+library(googleVis)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
    
    # Application title
-   titlePanel("Old Faithful Geyser Data"),
+   titlePanel("Temperatures per country"),
    
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30),
-
         sliderInput("selectYear",
                     "Year selected:",
                     min = 1900,
@@ -40,16 +35,24 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- (tempsByCountry %>% filter(year == input$selectYear))[, 4]
-      bins <- seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x[[1]], breaks = bins, col = 'darkgray', border = 'white',
-           xlab = "Temperatures", main = "Number of countries per temperature")
-   })
+  
+  output$distPlot <- renderGvis({
+    x <- tempsByCountry %>% filter(year == input$selectYear)
+    GeoStates <- gvisGeoChart(x, locationvar = "Country",
+                 colorvar = "TenYearAvg",
+                 options = list(colorAxis ="{colors:['blue', 'red']}"))
+    plot(GeoStates)
+  })
+
+     
+#   output$distPlot <- renderPlot({
+#      # generate bins based on input$bins from ui.R
+#      x    <- (tempsByCountry %>% filter(year == input$selectYear))[, 4]
+#      
+#      # draw the histogram with the specified number of bins
+#      hist(x[[1]], col = 'darkgray', border = 'white',
+#           xlab = "Temperatures", main = "Number of countries per temperature")
+#   })
 }
 
 # Run the application 
