@@ -29,7 +29,6 @@ Lien : https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-tempera
 
 ### Dans un premier temps, étude globale, à l'échelle du globe
 
-
 #### Premier test : séparer les dates en année, mois, jour, puis supprimer les jours, et enfin sélectionner à partir de 1800 (pour avoir des données plus sûres)
 ```{r}
 globalTemperatures <- read.csv("globalTemperatures.csv")
@@ -203,5 +202,10 @@ GeoStates <- gvisGeoChart(x, locationvar = "Country",
              colorvar = "TenYearAvg",
              options = list(colorAxis ="{colors:['blue', 'red']}"))
 plot(GeoStates)
+```
+
+
+```{r}
+"a" %in% c("a", "b", "c")
 ```
 
