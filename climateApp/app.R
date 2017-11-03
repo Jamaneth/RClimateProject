@@ -28,7 +28,7 @@ ui <- fluidPage(
             
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+         htmlOutput("distPlot")
       )
    )
 )
@@ -41,7 +41,6 @@ server <- function(input, output) {
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                  colorvar = "TenYearAvg",
                  options = list(colorAxis ="{colors:['blue', 'red']}"))
-    plot(GeoStates)
   })
 
      

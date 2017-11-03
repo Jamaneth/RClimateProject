@@ -200,6 +200,10 @@ View(tempsByCountry %>% filter(year == 1920) %>%
 
 ```{r}
 library(googleVis)
-vignette("googleVis")
+x <- tempsByCountry %>% filter(year == 1900)
+GeoStates <- gvisGeoChart(x, locationvar = "Country",
+             colorvar = "TenYearAvg",
+             options = list(colorAxis ="{colors:['blue', 'red']}"))
+plot(GeoStates)
 ```
 
