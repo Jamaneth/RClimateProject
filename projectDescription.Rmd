@@ -120,8 +120,6 @@ tempsByCountry <- tempsByCountry %>%
 
 tempsByCountry$year <- as.numeric(tempsByCountry$year)
 
-
-View(tempsByCountry)
 ```
 
 #### On fait la moyenne par an
@@ -151,6 +149,18 @@ for (i in c(10:length(tempsSelectCountry$TenYearAvg))) {
 View(tempsSelectCountry)
 ```
 
+##### En fait, on a besoin de faire ça pour toute la base de données, peut-être
+```{r}
+tempsByCountry$TenYearAvg = NA
+
+for (i in c(10:length(tempsByCountry$TenYearAvg))) {
+  if(tempsByCountry$Country[i] == tempsByCountry$Country[i-9]) {
+    tempsByCountry$TenYearAvg[i] <- mean(tempsByCountry$AverageTemperature[(i-9):i])
+  }
+}
+
+View(tempsByCountry)
+```
 
 #### Quatrième étape : on trace un graphe !
 ```{r}
@@ -168,9 +178,6 @@ ggplot(data = tempsSelectCountry,
 ```
 
 
-```{r}
-
-```
 
 
 ## Troisième idée : trouver quelques corrélations
@@ -181,3 +188,13 @@ ggplot(data = tempsSelectCountry,
 Juste quelques pistes ...
 
 ## Quatrième idée : étudier la chaleur comme prédicteur
+```{r}
+c((tempsByCountry %>% filter(year == 1900))[, 4])
+```
+
+```{r}
+ct = 26
+View(tempsByCountry %>% filter(year == 1920) %>%
+  filter(TenYearAvg > ct, TenYearAvg < ct + 1))
+```
+
