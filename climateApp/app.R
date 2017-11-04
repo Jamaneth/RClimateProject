@@ -55,33 +55,38 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-  
+    
   output$distPlot <- renderGvis({
     x <- tempsByCountry %>% filter(Year == input$selectYear)
+    
+    if(input$selectGraph == 1) {
+      selectColumn = "TenYearAvg"
+      graphThingy = "{
+        values:[-20, 0, 30],
+        colors:['blue', 'white', 'red']}"
+      
+    } else if(input$selectGraph == 2) {
+      selectColumn = "TempDiff"
+      graphThingy = "{
+        values:[-1.3, 0, 1.7],
+        colors:['blue', 'white', 'red']}"      
+    }
+    
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
-                              colorvar = "TenYearAvg",
+                              colorvar = selectColumn,
                               options = list(
                                 height = 500,
                                 width = 750,
                                 keepAspectRatio = FALSE,
-                                backgroundColor = "#FFFFFF",
-                                defaultColor = "white",
-                                colorAxis ="{
-                                  values:[-20, 30],
-                                  colors:['blue', 'red']}"))
+                                backgroundColor = "white",
+                                defaultColor = "gray",
+                                colorAxis = graphThingy))
     })
 
 
 
      
-#   output$distPlot <- renderPlot({
-#      # generate bins based on input$bins from ui.R
-#      x    <- (tempsByCountry %>% filter(year == input$selectYear))[, 4]
-#      
-#      # draw the histogram with the specified number of bins
-#      hist(x[[1]], col = 'darkgray', border = 'white',
-#           xlab = "Temperatures", main = "Number of countries per temperature")
-#   })
+
 }
 
 # Run the application 

@@ -210,6 +210,6 @@ plot(GeoStates)
 ```
 
 ```{r}
-write.csv2(tempsByCountry, file = "tempsByCountry.csv")
+min(tempsByCountry$TempDiff, na.rm = TRUE)
 ```
 
