@@ -31,26 +31,29 @@ genGlobalTemperatures <- function(){
 }
 
 
-genCountryTemperatures <- function(userCountry = "World") {
+genCountryTemperatures <- function(country = "World", year = 1900) {
   tempsByCountry <- read.csv("GlobalLandTemperaturesByCountry.csv")
   
   # Mettre les dates en forme
   tempsByCountry$dt <- as.character(tempsByCountry$dt)
   tempsByCountry <- tempsByCountry %>%
-    separate("dt", c("year", "month", "day"), sep = "-", remove = TRUE) %>%
-    select(-day)
-  tempsByCountry$year <- as.numeric(tempsByCountry$year)
+    separate("dt", c("Year", "Month", "Day"), sep = "-", remove = TRUE) %>%
+    select(-Day)
+  tempsByCountry$Year <- as.numeric(tempsByCountry$Year)
+  
+  # Filtrer les années à partir de l'année sélectionnée
+  tempsByCountry <- tempsByCountry %>% filter(Year >= year - 9)
   
   # Faire la moyenne par an
   tempsByCountry <- tempsByCountry %>%
-    group_by(year, Country) %>%
+    group_by(Year, Country) %>%
     summarise(AverageTemperature = mean(AverageTemperature)) %>%
     arrange(Country)
   
   # Sélectionner un pays
-  if (userCountry %in% tempsByCountry$Country) {
+  if (country %in% tempsByCountry$Country) {
     
-    tempsByCountry = tempsByCountry %>% filter(Country == userCountry)
+    tempsByCountry = tempsByCountry %>% filter(Country == country)
     tempsByCountry$TenYearAvg = NA
     for (i in c(10:length(tempsByCountry$TenYearAvg))) {
       tempsByCountry$TenYearAvg[i] <- mean(tempsByCountry$AverageTemperature[(i-9):i])
@@ -58,8 +61,8 @@ genCountryTemperatures <- function(userCountry = "World") {
     return(tempsByCountry)
     
   }
-  else if(userCountry == "World") {
-    
+  else if(country == "World") {
+
     tempsByCountry$TenYearAvg = NA
     for (i in c(10:length(tempsByCountry$TenYearAvg))) {
       if(tempsByCountry$Country[i] == tempsByCountry$Country[i-9]) {
@@ -76,4 +79,5 @@ genCountryTemperatures <- function(userCountry = "World") {
   
 }
 
-View(genCountryTemperatures())
+tempsByCountry <- genCountryTemperatures(country = "Spain", year = 1980)
+View(tempsByCountry)

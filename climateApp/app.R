@@ -57,6 +57,9 @@ server <- function(input, output) {
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                  colorvar = "TenYearAvg",
                  options = list(
+                   height = 500,
+                   width = 750,
+                   keepAspectRatio = FALSE,
                    backgroundColor = "#FFFFFF",
                    defaultColor = "white",
                    colorAxis ="{

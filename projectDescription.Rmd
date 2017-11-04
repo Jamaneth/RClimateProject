@@ -192,7 +192,7 @@ Juste quelques pistes ...
 ```
 
 ```{r}
-max(tempsByCountry[,4], na.rm = TRUE)
+max(tempsByCountry[,4], na.rm = TRUE) + 1
 ```
 
 ```{r}
@@ -207,5 +207,34 @@ plot(GeoStates)
 
 ```{r}
 "a" %in% c("a", "b", "c")
+```
+
+```{r}
+set.seed(993)
+x <- 1:300
+y <- sin(x/20) + rnorm(300,sd=.1)
+y[251:255] <- NA
+# Plot the unsmoothed data (gray)
+plot(x, y, type="l", col=grey(.5))
+# Draw gridlines
+grid()
+
+# Smoothed with lag:
+# average of current sample and 19 previous samples (red)
+f20 <- rep(1/20, 20)
+#>  [1] 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05
+#> [18] 0.05 0.05 0.05
+y_lag <- stats::filter(y, f20, sides=1)
+lines(x, y_lag, col="red")
+
+# Smoothed symmetrically:
+# average of current sample, 10 future samples, and 10 past samples (blue)
+f21 <- rep(1/21,21)
+f21
+#>  [1] 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905
+#>  [8] 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905
+#> [15] 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905 0.04761905
+y_sym <- stats::filter(y, f21, sides=2)
+lines(x, y_sym, col="blue")
 ```
 
