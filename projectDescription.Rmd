@@ -195,21 +195,59 @@ Juste quelques pistes ...
 max(tempsByCountry[,4], na.rm = TRUE) + 1
 ```
 
-```{r}
-library(googleVis)
-x <- tempsByCountry %>% filter(year == 1900)
-GeoStates <- gvisGeoChart(x, locationvar = "Country",
-             colorvar = "TenYearAvg",
-             options = list(colorAxis ="{colors:['blue', 'red']}"))
-plot(GeoStates)
-```
-
 
 ```{r}
 "a" %in% c("a", "b", "c")
 ```
 
+#### Sauvegarde de l'UI au cas où tout plante
 ```{r}
-min(tempsByCountry$TempDiff, na.rm = TRUE)
+ui <- fluidPage(
+   
+   titlePanel("Map temperatures"),
+   
+   sidebarLayout(
+      sidebarPanel(
+        
+        # Slider for the year selected
+        sliderInput("selectYear",
+                    "Year selected:",
+                    min = 1900,
+                    max = 2012,
+                    value = 1900,
+                    sep = "",
+                    animate =
+                      animationOptions(interval = 2000)),
+        
+        # Scrolling menu to choose a type of map
+        selectInput(
+          inputId = "selectGraph",
+          label = "Choose: ",
+          choices = c("Average Temperature Per Country" = 1, "Difference With Average" = 2)),
+        
+        # Indicating the data source
+        br(),
+        h4("Data source"),
+        p("Berkeley Earth,",
+          a("Climate Change: Earth Surface Temperature Data",
+            href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
+          "(includes data on global temperatures since 1750)")
+        
+        
+      ),
+            
+      # Show a plot of the generated distribution
+      mainPanel(
+        
+        textOutput("graphTitle"),
+        
+        htmlOutput("distPlot")
+      )
+   )
+)
+```
+```{r}
+globalTemps <- genGlobalTemperatures()
+View(globalTemps)
 ```
 

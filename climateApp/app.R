@@ -10,52 +10,76 @@
 library(shiny)
 library(googleVis)
 library(tidyverse)
+library(dygraphs)
 
 ui <- fluidPage(
-   
-   titlePanel("Map temperatures"),
-   
-   sidebarLayout(
-      sidebarPanel(
-        
-        # Slider for the year selected
-        sliderInput("selectYear",
-                    "Year selected:",
-                    min = 1900,
-                    max = 2012,
-                    value = 1900,
-                    sep = ""),
-        
-        # Scrolling menu to choose a type of map
-        selectInput(
-          inputId = "selectGraph",
-          label = "Choose: ",
-          choices = c("Map Temperature" = 1, "Temperature Difference" = 2)),
-        
-        # Indicating the data source
-        br(),
-        h4("Data source"),
-        p("Berkeley Earth,",
-          a("Climate Change: Earth Surface Temperature Data",
-            href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
-          "(includes data on global temperatures since 1750)")
-        
-        
-      ),
-            
-      # Show a plot of the generated distribution
+  
+  navbarPage("Navigation",
+             
+    tabPanel("Overview",
+             
       mainPanel(
-        
-        textOutput("graphTitle"),
-        
-        htmlOutput("distPlot")
+        plotOutput("overviewGraph")
       )
-   )
+             
+             ),
+             
+    tabPanel("World map",
+             
+      titlePanel("Map temperatures"),
+             
+       sidebarLayout(
+         sidebarPanel(
+                 
+         # Slider for the year selected
+           sliderInput("selectYear",
+                       "Year selected:",
+                       min = 1900,
+                       max = 2012,
+                       value = 1900,
+                       sep = "",
+                       animate =
+                         animationOptions(interval = 2000)),
+                   
+         # Scrolling menu to choose a type of map
+           selectInput(
+            inputId = "selectGraph",
+             label = "Choose: ",
+             choices = c("Average Temperature Per Country" = 1, "Difference With Average" = 2)),
+                 
+         # Indicating the data source
+           br(),
+           h4("Data source"),
+           p("Berkeley Earth,",
+           a("Climate Change: Earth Surface Temperature Data",
+             href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
+           "(includes data on global temperatures since 1750)")
+                 
+                 
+          ),
+               
+       # Show a plot of the generated distribution
+         mainPanel(
+                   
+           textOutput("graphTitle"),
+                   
+           htmlOutput("distPlot")
+         )
+       )
+    )
+  )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     
+  
+  output$overviewGraph <- renderPlot({
+    x <- globalTemps
+    plot(x$year, x$TenYearAvg)
+  })
+  
+  
   output$distPlot <- renderGvis({
     x <- tempsByCountry %>% filter(Year == input$selectYear)
     

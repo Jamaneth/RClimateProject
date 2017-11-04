@@ -24,7 +24,7 @@ genGlobalTemperatures <- function(){
   
   for (i in c(10:length(globalTemperaturesYear$TenYearAvg))) {
     globalTemperaturesYear$TenYearAvg[i] <-
-      mean(globalTemperaturesYear$TenYearAvg[(i-9):i])
+      mean(globalTemperaturesYear$LandAverageTemperature[(i-9):i])
   }
   
   return(globalTemperaturesYear)
@@ -91,6 +91,3 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   }
   
 }
-
-tempsByCountry <- genCountryTemperatures(year = 1900)
-View(tempsByCountry)
