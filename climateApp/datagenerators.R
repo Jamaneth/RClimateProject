@@ -40,6 +40,7 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
     separate("dt", c("Year", "Month", "Day"), sep = "-", remove = TRUE) %>%
     select(-Day)
   tempsByCountry$Year <- as.numeric(tempsByCountry$Year)
+  tempsByCountry$Country <- as.character(tempsByCountry$Country)
   
   # Filtrer les années à partir de l'année sélectionnée
   tempsByCountry <- tempsByCountry %>% filter(Year >= year - 9)
@@ -75,11 +76,12 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
       if(tempsByCountry$Country[i] == tempsByCountry$Country[i-9]) {
         tempsByCountry$TenYearAvg[i] <-
           mean(tempsByCountry$AverageTemperature[(i-9):i])
-        tempsByCountry$TempDiff[i] <-
-          tempsByCountry$TenYearAvg[i] - AvgTempByCountry[tempsByCountry$Country]
+        tempsByCountry$TempDiff[i] <- tempsByCountry$TenYearAvg[i] - AvgTempByCountry[tempsByCountry$Country[i]]
+
       }
     }
     
+    tempsByCountry$TempDiff <- as.numeric(tempsByCountry$TempDiff)
     return(tempsByCountry)
     
   }
@@ -90,5 +92,5 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   
 }
 
-test <- genCountryTemperatures()
-View(test)
+tempsByCountry <- genCountryTemperatures(year = 1900)
+View(tempsByCountry)

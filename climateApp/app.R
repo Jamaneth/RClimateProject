@@ -9,10 +9,11 @@
 
 library(shiny)
 library(googleVis)
+library(tidyverse)
 
 ui <- fluidPage(
    
-   titlePanel("Temperatures per country"),
+   titlePanel("Map temperatures"),
    
    sidebarLayout(
       sidebarPanel(
@@ -44,7 +45,10 @@ ui <- fluidPage(
             
       # Show a plot of the generated distribution
       mainPanel(
-         htmlOutput("distPlot")
+        
+        textOutput("graphTitle"),
+        
+        htmlOutput("distPlot")
       )
    )
 )
@@ -55,18 +59,19 @@ server <- function(input, output) {
   output$distPlot <- renderGvis({
     x <- tempsByCountry %>% filter(Year == input$selectYear)
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
-                 colorvar = "TenYearAvg",
-                 options = list(
-                   height = 500,
-                   width = 750,
-                   keepAspectRatio = FALSE,
-                   backgroundColor = "#FFFFFF",
-                   defaultColor = "white",
-                   colorAxis ="{
-                   values:[-20, 30],
-                   colors:['blue', 'red']}"))
+                              colorvar = "TenYearAvg",
+                              options = list(
+                                height = 500,
+                                width = 750,
+                                keepAspectRatio = FALSE,
+                                backgroundColor = "#FFFFFF",
+                                defaultColor = "white",
+                                colorAxis ="{
+                                  values:[-20, 30],
+                                  colors:['blue', 'red']}"))
+    })
 
-  })
+
 
      
 #   output$distPlot <- renderPlot({
