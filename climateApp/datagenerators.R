@@ -63,12 +63,23 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   }
   else if(country == "World") {
 
+    AvgTempByCountry <- tempsByCountry %>%
+      group_by(Country) %>%
+      summarise(AverageTemperature = mean(AverageTemperature, na.rm = TRUE)) %>%
+      spread(key = Country, value = AverageTemperature)
+    
     tempsByCountry$TenYearAvg = NA
+    tempsByCountry$TempDiff = NA
+    
     for (i in c(10:length(tempsByCountry$TenYearAvg))) {
       if(tempsByCountry$Country[i] == tempsByCountry$Country[i-9]) {
-        tempsByCountry$TenYearAvg[i] <- mean(tempsByCountry$AverageTemperature[(i-9):i])
+        tempsByCountry$TenYearAvg[i] <-
+          mean(tempsByCountry$AverageTemperature[(i-9):i])
+        tempsByCountry$TempDiff[i] <-
+          tempsByCountry$TenYearAvg[i] - AvgTempByCountry[tempsByCountry$Country]
       }
     }
+    
     return(tempsByCountry)
     
   }
@@ -79,5 +90,5 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   
 }
 
-tempsByCountry <- genCountryTemperatures(country = "Spain", year = 1980)
-View(tempsByCountry)
+test <- genCountryTemperatures()
+View(test)

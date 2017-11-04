@@ -53,7 +53,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$distPlot <- renderGvis({
-    x <- tempsByCountry %>% filter(year == input$selectYear)
+    x <- tempsByCountry %>% filter(Year == input$selectYear)
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                  colorvar = "TenYearAvg",
                  options = list(
