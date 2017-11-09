@@ -251,3 +251,12 @@ globalTemps <- genGlobalTemperatures()
 View(globalTemps)
 ```
 
+```{r}
+tempsByCountry <- genCountryTemperatures()
+write.csv2(tempsByCountry, file = "tempsByCountry.csv", na = "NA")
+```
+
+```{r}
+tempsByCountry <- tempsByCountryTemp
+```
+

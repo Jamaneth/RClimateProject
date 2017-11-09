@@ -12,21 +12,38 @@ library(googleVis)
 library(tidyverse)
 library(dygraphs)
 
+tempsByCountry <- read.csv2("tempsByCountry.csv")
+
 ui <- fluidPage(
   
   navbarPage("Navigation",
              
     tabPanel("Overview",
-             
       mainPanel(
-        plotOutput("overviewGraph")
+        dygraphOutput("overviewGraph")
       )
-             
-             ),
+    ),
+    
+    tabPanel("Graph per country",
+      titlePanel("Temperature graph per country"),       
+      sidebarLayout(
+        sidebarPanel(
+          selectInput(
+            inputId = "selectCountry",
+            label = "Choose country:",
+            choices = unique(as.vector(tempsByCountry$Country))
+          )
+        ),
+      
+      mainPanel(
+        dygraphOutput("countryGraph")
+        )
+      )
+    ),
              
     tabPanel("World map",
              
-      titlePanel("Map temperatures"),
+      titlePanel("Map temperatures (°C)"),
              
        sidebarLayout(
          sidebarPanel(
@@ -45,7 +62,7 @@ ui <- fluidPage(
            selectInput(
             inputId = "selectGraph",
              label = "Choose: ",
-             choices = c("Average Temperature Per Country" = 1, "Difference With Average" = 2)),
+             choices = c("Average Temperature per Country" = 1, "Difference With Average" = 2)),
                  
          # Indicating the data source
            br(),
@@ -60,9 +77,7 @@ ui <- fluidPage(
                
        # Show a plot of the generated distribution
          mainPanel(
-                   
            textOutput("graphTitle"),
-                   
            htmlOutput("distPlot")
          )
        )
@@ -72,11 +87,38 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-    
   
-  output$overviewGraph <- renderPlot({
+  output$countryGraph <- renderDygraph({
+    x <- tempsByCountry %>% filter(Country == input$selectCountry) %>%
+      select("Year", "TenYearAvg", "AverageTemperature")
+    dygraph(x,
+            main = paste("Temperatures in", input$selectCountry, "between 1900 and 2012"),
+            xlab = "Year",
+            ylab = "Temperatures (°C)") %>%
+      dySeries("TenYearAvg",
+               label = "Moving Average",
+               color = "red",
+               strokeWidth = 3) %>%
+      dySeries("AverageTemperature",
+               label = "Yearly Average",
+               color = "gray",
+               strokeWidth = 0.5)
+  })  
+  
+  output$overviewGraph <- renderDygraph({
     x <- globalTemps
-    plot(x$year, x$TenYearAvg)
+    dygraph(x,
+            main = "World Temperatures Between 1750 and 2012",
+            xlab = "Year",
+            ylab = "Temperatures (°C)") %>%
+      dySeries("TenYearAvg",
+               label = "Moving Average",
+               color = "red",
+               strokeWidth = 3) %>%
+      dySeries("LandAverageTemperature",
+               label = "Yearly Average",
+               color = "gray",
+               strokeWidth = 0.5)
   })
   
   
@@ -99,17 +141,14 @@ server <- function(input, output) {
     GeoStates <- gvisGeoChart(x, locationvar = "Country",
                               colorvar = selectColumn,
                               options = list(
-                                height = 500,
+                                projection = "kavrayskiy-vii",
+                                height = 400,
                                 width = 750,
                                 keepAspectRatio = FALSE,
                                 backgroundColor = "white",
                                 defaultColor = "gray",
                                 colorAxis = graphThingy))
     })
-
-
-
-     
 
 }
 
