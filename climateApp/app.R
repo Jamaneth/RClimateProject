@@ -85,28 +85,11 @@ ui <- fluidPage(
     ),
     
     # Third panel
-    tabPanel("Overview",
+    tabPanel("Temperatures and CO2",
       titlePanel("Temperatures and CO2 concentration"),       
       sidebarLayout(
         sidebarPanel(
-          selectInput(
-            inputId = "selectCountry",
-            label = "Choose country:",
-            choices = unique(as.vector(tempsByCountry$Country))
-            ),
-                 
-          # Adding a commentary on the methodology
-          br(),
-          h4("Method"),
-          tags$ul(
-            tags$li("For each country, the yearly average was calculated by averaging
-                    the average monthly temperature."),
-            tags$li("The moving average was calculated on a basis of ten years,
-                    so as to reduce the variability between years.")
-            ),
-                 
           # Indicating the data source
-          br(),
           h4("Data source"),
           p("Berkeley Earth,",
             a("Climate Change: Earth Surface Temperature Data",
@@ -118,7 +101,7 @@ ui <- fluidPage(
                
       mainPanel(
         dygraphOutput("overviewGraph"),
-        dygraphOutput("carbonGraph")
+        textOutput("correlationText")
         )
       )
     )
@@ -137,42 +120,45 @@ server <- function(input, output) {
             xlab = "Year",
             ylab = "Temperatures (°C)") %>%
       dySeries("TenYearAvg",
-               label = "Moving Average",
+               label = "Moving Average (°C)",
                color = "red",
                strokeWidth = 3) %>%
       dySeries("AverageTemperature",
-               label = "Yearly Average",
+               label = "Yearly Average (°C)",
                color = "gray",
                strokeWidth = 0.5)
   })  
   
   output$overviewGraph <- renderDygraph({
     x <- genOverview()
-    dygraph(x %>% select(-CO2),
-            main = "World Temperatures Between 1750 and 2012",
+    dygraph(x %>% select(-LandAverageTemperature),
+            main = "World Temperatures and CO2 Concentration",
             xlab = "Year",
             ylab = "Temperatures (°C)") %>%
+      dyAxis("y", label = "Temperatures") %>%
+      dyAxis("y2", label = "CO2 Concentration (ppm)", valueRange = c(220, 410)) %>%
       dySeries("TenYearAvg",
-               label = "Moving Average",
+               label = "Moving Average (°C)",
                color = "red",
                strokeWidth = 3) %>%
-      dySeries("LandAverageTemperature",
-               label = "Yearly Average",
-               color = "gray",
-               strokeWidth = 0.5)
+      dySeries("CO2",
+               label = "CO2 concentration",
+               color = "black",
+               strokeWidth = 3,
+               axis = ("y2")) %>%
+      dyLegend(labelsSeparateLines = TRUE)
   })
   
-  output$carbonGraph <- renderDygraph({
-    x <- genCarbonDioxide()
-    dygraph(x,
-            main = "Carbon concentration in the atmosphere between 1750 and 2012",
-            xlab = "Year",
-            ylab = "ppm") %>%
-      dySeries("CO2",
-               label = "CO2",
-               color = "black",
-               strokeWidth = 3)
+  output$correlationText <- renderText({
+    
+    x <- genOverview()
+    correlation <- cor(x$TenYearAvg, x$CO2, use = "na.or.complete")
+    
+    paste("Correlation between the world temperatures and the C02 in the atmosphere:",
+                  round(correlation,3))
   })
+  
+
   
   output$distPlot <- renderGvis({
     x <- tempsByCountry %>% filter(Year == input$selectYear)
