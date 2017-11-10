@@ -48,7 +48,13 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   tempsByCountry <- tempsByCountry %>% filter(Year >= year - 9)
 
   # Nettoyage : remplacer Burma par Myanmar pour être reconnu par la carte sur Shiny
-  tempsByCountry$Country = gsub("Burma", "Myanmar", tempsByCountry$Country)  
+  tempsByCountry$Country = gsub("Burma", "Myanmar", tempsByCountry$Country)
+  
+  # Nettoyage : notre base de données n'a pas d'informations pour le Sud Soudan, donc on les
+  # calque sur celles du Soudan par défaut
+  tempsSouthSudan <- tempsByCountry %>% filter(Country == "Sudan")
+  tempsSouthSudan$Country <- gsub("Sudan", "South Sudan", tempsSouthSudan$Country)
+  tempsByCountry <- rbind(tempsByCountry, tempsSouthSudan)
     
   # Faire la moyenne par an
   tempsByCountry <- tempsByCountry %>%

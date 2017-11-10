@@ -262,6 +262,13 @@ tempsByCountry <- tempsByCountryTemp
 ```
 
 ```{r}
-View(genOverview())
+test <- genOverview()
+cor(test$TenYearAvg, test$CO2, use = "na.or.complete")
+```
+
+```{r}
+# Adding South Sudan
+tempsByCountryTemp = tempsByCountry %>% rbind(tableSouthSudan)
+View(tempsByCountry)
 ```
 

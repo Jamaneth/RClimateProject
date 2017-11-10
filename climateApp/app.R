@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 library(googleVis)
 library(tidyverse)
@@ -95,7 +86,7 @@ ui <- fluidPage(
     
     # Third panel
     tabPanel("Overview",
-      titlePanel("Temperature graph per country"),       
+      titlePanel("Temperatures and CO2 concentration"),       
       sidebarLayout(
         sidebarPanel(
           selectInput(
@@ -120,19 +111,22 @@ ui <- fluidPage(
           p("Berkeley Earth,",
             a("Climate Change: Earth Surface Temperature Data",
               href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
-            "(includes data on global temperatures since 1750)")
-            ),
+            "(includes data on global temperatures since 1750)"),
+          p("IAC Switzerland,",
+            a("Global CO2 Yearly", href = "https://www.co2.earth/historical-co2-datasets"))
+        ),
                
       mainPanel(
         dygraphOutput("overviewGraph"),
         dygraphOutput("carbonGraph")
-      )
+        )
       )
     )
   )
 )
 
-# Define server logic required to draw a histogram
+
+
 server <- function(input, output) {
   
   output$countryGraph <- renderDygraph({
