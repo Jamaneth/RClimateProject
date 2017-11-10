@@ -3,20 +3,21 @@ library(ggplot2)
 library(ggthemes)
 
 genGlobalTemperatures <- function(){
-  
+# Fonction pour générer la base de données de températures annuelles au niveau global à partir
+# de la base de données de Berkeley Earth
   globalTemperatures <- read.csv("globalTemperatures.csv")
   
   # Séparer les dates en année/mois/jour pour ne sélectionner que les années et les mois
   globalTemperatures$dt <- as.character(globalTemperatures$dt)
   globalTemperatures <- globalTemperatures %>%
-    separate("dt", c("year", "month", "day"), sep = "-", remove = TRUE) %>%
+    separate("dt", c("Year", "month", "day"), sep = "-", remove = TRUE) %>%
     select(-day)
   
-  globalTemperatures$year <- as.numeric(globalTemperatures$year)
+  globalTemperatures$Year <- as.numeric(globalTemperatures$Year)
   
   # Faire la moyenne par an
   globalTemperaturesYear <- globalTemperatures %>%
-    group_by(year) %>%
+    group_by(Year) %>%
     summarise(LandAverageTemperature = mean(LandAverageTemperature))
   
   # Ajouter une colonne avec la moyenne étalée sur dix ans
@@ -30,8 +31,9 @@ genGlobalTemperatures <- function(){
   return(globalTemperaturesYear)
 }
 
-
 genCountryTemperatures <- function(country = "World", year = 1900) {
+  # Fonction pour générer les données de températures annuelles par pays d'après la base
+  # de données de Berkeley Earth
   tempsByCountry <- read.csv("GlobalLandTemperaturesByCountry.csv")
   
   # Mettre les dates en forme
@@ -44,7 +46,10 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   
   # Filtrer les années à partir de l'année sélectionnée
   tempsByCountry <- tempsByCountry %>% filter(Year >= year - 9)
-  
+
+  # Nettoyage : remplacer Burma par Myanmar pour être reconnu par la carte sur Shiny
+  tempsByCountry$Country = gsub("Burma", "Myanmar", tempsByCountry$Country)  
+    
   # Faire la moyenne par an
   tempsByCountry <- tempsByCountry %>%
     group_by(Year, Country) %>%
@@ -60,7 +65,6 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
       tempsByCountry$TenYearAvg[i] <- mean(tempsByCountry$AverageTemperature[(i-9):i])
     }
     return(tempsByCountry)
-    
   }
   else if(country == "World") {
 
@@ -90,4 +94,23 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
     return(NULL)
   }
   
+}
+
+genCarbonDioxide <- function(){
+  # Fonction pour nettoyer la base de données de la concentration atmosphérique en CO2
+  carbonDioxide <- read.csv("GlobalCarbonDioxide.csv")  
+  
+  carbonDioxide <- carbonDioxide %>% filter(year >= 1750) %>%
+    select(year, data_mean_global)
+  colnames(carbonDioxide) <- c("Year", "CO2")
+  return(carbonDioxide)
+}
+
+genOverview <- function(){
+  # Fonction pour lier les températures moyennes annuelles au niveau du monde et
+  # la concentration atmosphérique en C02 
+  carbonDioxide <- genCarbonDioxide()
+  globalTemps <- genGlobalTemperatures()
+  overview = globalTemps %>% full_join(carbonDioxide, by = "Year")
+  return(overview)
 }

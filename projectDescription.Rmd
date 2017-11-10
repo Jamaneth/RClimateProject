@@ -258,5 +258,10 @@ write.csv2(tempsByCountry, file = "tempsByCountry.csv", na = "NA")
 
 ```{r}
 tempsByCountry <- tempsByCountryTemp
+
+```
+
+```{r}
+View(genOverview())
 ```
 
