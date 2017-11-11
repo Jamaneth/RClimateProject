@@ -89,12 +89,22 @@ ui <- fluidPage(
       titlePanel("Temperatures and CO2 concentration"),       
       sidebarLayout(
         sidebarPanel(
+          selectInput(
+            inputId = "selectPrediction",
+            label = "Prediction: ",
+            choices = c("Activated" = 1, "Deactivated" = 0)),
+          
+          br(),
+          h4("Remark"),
+          p("The average temperature was calculated with a 10-year moving average in order to
+            obtain more consistent results."),
+          
           # Indicating the data source
+          br(),
           h4("Data source"),
           p("Berkeley Earth,",
             a("Climate Change: Earth Surface Temperature Data",
-              href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data"),
-            "(includes data on global temperatures since 1750)"),
+              href = "https://www.kaggle.com/berkeleyearth/climate-change-earth-surface-temperature-data")),
           p("IAC Switzerland,",
             a("Global CO2 Yearly", href = "https://www.co2.earth/historical-co2-datasets"))
         ),
@@ -129,36 +139,35 @@ server <- function(input, output) {
                strokeWidth = 0.5)
   })  
   
+  
   output$overviewGraph <- renderDygraph({
     x <- genOverview()
     dygraph(x %>% select(-LandAverageTemperature),
             main = "World Temperatures and CO2 Concentration",
             xlab = "Year",
             ylab = "Temperatures (°C)") %>%
-      dyAxis("y", label = "Temperatures") %>%
-      dyAxis("y2", label = "CO2 Concentration (ppm)", valueRange = c(220, 410)) %>%
+      dyAxis("y", label = "Temperatures", valueRange = c(7, 10)) %>%
+      dyAxis("y2", label = "CO2 Concentration (ppm)", valueRange = c(230, 410)) %>%
       dySeries("TenYearAvg",
-               label = "Moving Average (°C)",
+               label = "Average Temperature (°C)",
                color = "red",
                strokeWidth = 3) %>%
       dySeries("CO2",
-               label = "CO2 concentration",
+               label = "CO2 concentration (ppm)",
                color = "black",
                strokeWidth = 3,
                axis = ("y2")) %>%
       dyLegend(labelsSeparateLines = TRUE)
   })
   
+  
   output$correlationText <- renderText({
-    
     x <- genOverview()
     correlation <- cor(x$TenYearAvg, x$CO2, use = "na.or.complete")
-    
-    paste("Correlation between the world temperatures and the C02 in the atmosphere:",
+    paste("Correlation between the evolution of the temperature and the CO2 in the atmosphere:",
                   round(correlation,3))
   })
   
-
   
   output$distPlot <- renderGvis({
     x <- tempsByCountry %>% filter(Year == input$selectYear)
@@ -168,7 +177,6 @@ server <- function(input, output) {
       graphThingy = "{
         values:[-20, 0, 30],
         colors:['blue', 'white', 'red']}"
-      
     } else if(input$selectGraph == 2) {
       selectColumn = "TempDiff"
       graphThingy = "{

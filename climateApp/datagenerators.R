@@ -65,6 +65,7 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
   # Sélectionner un pays
   if (country %in% tempsByCountry$Country) {
     
+    # Calcul de la moyenne glissante sur 10 ans
     tempsByCountry = tempsByCountry %>% filter(Country == country)
     tempsByCountry$TenYearAvg = NA
     for (i in c(10:length(tempsByCountry$TenYearAvg))) {
@@ -73,7 +74,7 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
     return(tempsByCountry)
   }
   else if(country == "World") {
-
+  # Si aucun pays n'est sélectionné, alors la table est créée pour tous les pays du monde
     AvgTempByCountry <- tempsByCountry %>%
       group_by(Country) %>%
       summarise(AverageTemperature = mean(AverageTemperature, na.rm = TRUE)) %>%
@@ -81,7 +82,7 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
     
     tempsByCountry$TenYearAvg = NA
     tempsByCountry$TempDiff = NA
-    
+    # Calcul de la moyenne glissante sur 10 ans    
     for (i in c(10:length(tempsByCountry$TenYearAvg))) {
       if(tempsByCountry$Country[i] == tempsByCountry$Country[i-9]) {
         tempsByCountry$TenYearAvg[i] <-
@@ -103,7 +104,7 @@ genCountryTemperatures <- function(country = "World", year = 1900) {
 }
 
 genCarbonDioxide <- function(){
-  # Fonction pour nettoyer la base de données de la concentration atmosphérique en CO2
+  # Fonction pour nettoyer la base de données pour la concentration atmosphérique en CO2
   carbonDioxide <- read.csv("GlobalCarbonDioxide.csv")  
   
   carbonDioxide <- carbonDioxide %>% filter(year >= 1750) %>%
@@ -114,9 +115,35 @@ genCarbonDioxide <- function(){
 
 genOverview <- function(){
   # Fonction pour lier les températures moyennes annuelles au niveau du monde et
-  # la concentration atmosphérique en C02 
+  # la concentration atmosphérique en CO2 
   carbonDioxide <- genCarbonDioxide()
   globalTemps <- genGlobalTemperatures()
   overview = globalTemps %>% full_join(carbonDioxide, by = "Year")
   return(overview)
 }
+
+genOverviewPrediction <- function(){
+  
+  overviewPrediction <- genOverview() %>% filter(Year >= 1970)
+  modelCO2 = lm(formula = overviewPrediction$CO2 ~ overviewPrediction$Year)
+  modelTemp = lm(formula = overviewPrediction$TenYearAvg ~ overviewPrediction$CO2)
+  
+  overviewPrediction = overviewPrediction %>%
+    filter(Year == 2014) %>% 
+    select(-LandAverageTemperature)
+  
+  calcVect = c(overviewPrediction$Year[1], overviewPrediction$TenYearAvg[1],
+               overviewPrediction$CO2[1])
+  
+  for(calcYear in c(2015:2030)){
+   calcVect = c(calcVect[1] + 1,
+                modelTemp$coefficients[1] + modelTemp$coefficients[2] * calcVect[3],
+                calcVect[3] + modelCO2$coefficients[2])
+   overviewPrediction = rbind(overviewPrediction, calcVect)
+  }
+  
+  return(overviewPrediction)
+
+}
+
+View(genOverviewPrediction())
