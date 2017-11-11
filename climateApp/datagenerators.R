@@ -123,24 +123,32 @@ genOverview <- function(){
 }
 
 genOverviewPrediction <- function(){
-  
+  # On établit le modèle de régression linéaire sur la base de données à partir de 1970.
+  # En effet, un étude préliminaire a montré que, sur la période 1970-2014 :
+  # -> La concentration de CO2 suit une progression quasi-linéaire,
+  # -> La corrélation entre la concentration de CO2 et la température globale est égale à 0.99,
+  #    ce qui justifie l'établissement d'un modèle linéaire.
   overviewPrediction <- genOverview() %>% filter(Year >= 1970)
   modelCO2 = lm(formula = overviewPrediction$CO2 ~ overviewPrediction$Year)
   modelTemp = lm(formula = overviewPrediction$TenYearAvg ~ overviewPrediction$CO2)
   
   overviewPrediction = overviewPrediction %>%
-    filter(Year == 2014) %>% 
-    select(-LandAverageTemperature)
+    filter(Year == 2014)
   
-  calcVect = c(overviewPrediction$Year[1], overviewPrediction$TenYearAvg[1],
+  calcVect = c(overviewPrediction$Year[1], NA, overviewPrediction$TenYearAvg[1],
                overviewPrediction$CO2[1])
-  
+  # Pour une année donnée, on calcule les données de l'année d'après de la façon suivante :
+  # -> Température moyenne : on suit le modèle linéaire que l'on vient de calculer automatiquement,
+  # -> CO2 : on prend la concentration de CO2 de l'année dernière, et on ajoute le coefficient
+  #    de proportionnalité obtenu dans le deuxième modèle.
   for(calcYear in c(2015:2030)){
    calcVect = c(calcVect[1] + 1,
-                modelTemp$coefficients[1] + modelTemp$coefficients[2] * calcVect[3],
-                calcVect[3] + modelCO2$coefficients[2])
+                NA,
+                modelTemp$coefficients[1] + modelTemp$coefficients[2] * calcVect[4],
+                calcVect[4] + modelCO2$coefficients[2])
    overviewPrediction = rbind(overviewPrediction, calcVect)
   }
+  # On arrête le calcul dès 2030, puisqu'il s'agit d'un modèle linéaire simple.
   
   return(overviewPrediction)
 

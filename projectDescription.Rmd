@@ -262,13 +262,24 @@ tempsByCountry <- tempsByCountryTemp
 ```
 
 ```{r}
-test <- genOverview()
+test <- genOverview() %>% filter(Year >= 1970)
 cor(test$TenYearAvg, test$CO2, use = "na.or.complete")
+lm(formula = test$TenYearAvg ~ test$CO2)
+lm(formula = test$CO2 ~ test$Year)$coefficients[2]
+```
+
+We observe that :
+- The evolution of the CO2 concentration in the atmosphere is very close to a linear production after 1970. Therefore, we try to predict the future concentration according to this linear model.
+- Again, during the period 1970, the correlation between the average temperature and the CO2 concentration is equal to 99% (almost 1). We therefore attempt to predict the with a linear regression.
+- We stop at the year 2030 because our model will probably be obsolete by then.
+
+```{r}
+
+
+
 ```
 
 ```{r}
-# Adding South Sudan
-tempsByCountryTemp = tempsByCountry %>% rbind(tableSouthSudan)
-View(tempsByCountry)
+a = genOverviewPrediction()
 ```
 

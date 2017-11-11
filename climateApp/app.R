@@ -141,23 +141,35 @@ server <- function(input, output) {
   
   
   output$overviewGraph <- renderDygraph({
-    x <- genOverview()
-    dygraph(x %>% select(-LandAverageTemperature),
+    
+    if(input$selectPrediction == 0){
+      x <- genOverview()
+    } else {
+      x <- rbind(genOverview(), genOverviewPrediction())
+    }
+    
+    dygraphPlot <- dygraph(x %>% select(-LandAverageTemperature),
             main = "World Temperatures and CO2 Concentration",
             xlab = "Year",
             ylab = "Temperatures (°C)") %>%
-      dyAxis("y", label = "Temperatures", valueRange = c(7, 10)) %>%
-      dyAxis("y2", label = "CO2 Concentration (ppm)", valueRange = c(230, 410)) %>%
+      dyAxis("y", label = "Temperatures") %>%
+      dyAxis("y2", label = "CO2 Concentration (ppm)") %>%
       dySeries("TenYearAvg",
-               label = "Average Temperature (°C)",
+               label = "Average Temp. (°C)",
                color = "red",
                strokeWidth = 3) %>%
       dySeries("CO2",
-               label = "CO2 concentration (ppm)",
+               label = "CO2 conc. (ppm)",
                color = "black",
                strokeWidth = 3,
                axis = ("y2")) %>%
-      dyLegend(labelsSeparateLines = TRUE)
+      dyLegend(width = 460)
+    
+    if(input$selectPrediction == 1){
+      dygraphPlot %>% dyShading(from = "2015", to = "2030", color = "#F3F781")
+    } else {
+      dygraphPlot
+    }
   })
   
   
