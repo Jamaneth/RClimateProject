@@ -123,12 +123,12 @@ genOverview <- function(){
 }
 
 genOverviewPrediction <- function(){
-  # On établit le modèle de régression linéaire sur la base de données à partir de 1970.
-  # En effet, un étude préliminaire a montré que, sur la période 1970-2014 :
+  # On établit le modèle de régression linéaire sur la base de données à partir de 1980.
+  # En effet, un étude préliminaire a montré que, sur la période 1980-2014 :
   # -> La concentration de CO2 suit une progression quasi-linéaire,
-  # -> La corrélation entre la concentration de CO2 et la température globale est égale à 0.99,
+  # -> La corrélation entre la concentration de CO2 et la température globale est de 0.99,
   #    ce qui justifie l'établissement d'un modèle linéaire.
-  overviewPrediction <- genOverview() %>% filter(Year >= 1970)
+  overviewPrediction <- genOverview() %>% filter(Year >= 1980)
   modelCO2 = lm(formula = overviewPrediction$CO2 ~ overviewPrediction$Year)
   modelTemp = lm(formula = overviewPrediction$TenYearAvg ~ overviewPrediction$CO2)
   
@@ -151,7 +151,4 @@ genOverviewPrediction <- function(){
   # On arrête le calcul dès 2030, puisqu'il s'agit d'un modèle linéaire simple.
   
   return(overviewPrediction)
-
 }
-
-View(genOverviewPrediction())

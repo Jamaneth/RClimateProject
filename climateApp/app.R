@@ -5,6 +5,8 @@ library(dygraphs)
 
 tempsByCountry <- read.csv2("tempsByCountry.csv")
 
+source("datagenerators.R")
+
 ui <- fluidPage(
   
   navbarPage("Navigation",
@@ -89,15 +91,13 @@ ui <- fluidPage(
       titlePanel("Temperatures and CO2 concentration"),       
       sidebarLayout(
         sidebarPanel(
-          selectInput(
-            inputId = "selectPrediction",
-            label = "Prediction: ",
-            choices = c("Activated" = 1, "Deactivated" = 0)),
-          
-          br(),
-          h4("Remark"),
-          p("The average temperature was calculated with a 10-year moving average in order to
-            obtain more consistent results."),
+
+          h4("Method"),
+          p("The average temperature was calculated with a 10-year moving average."),
+          p("As for the prediction: the CO2 concentration follows a linear progression on the period 1980-2014, so this was used as a
+            basis to extrapole values for the period 2015-2030,"),
+          p("During the same period, we observed a .996 correlation between the temperature and CO2 concentration,
+                    so we express the temperature for the period 2015-2030 as a linear function of the CO2 concentration."),
           
           # Indicating the data source
           br(),
@@ -110,6 +110,11 @@ ui <- fluidPage(
         ),
                
       mainPanel(
+        checkboxInput(
+          inputId = "selectPrediction",
+          label = "Include prediction",
+          value = TRUE),
+        
         dygraphOutput("overviewGraph"),
         textOutput("correlationText")
         )
@@ -136,13 +141,14 @@ server <- function(input, output) {
       dySeries("AverageTemperature",
                label = "Yearly Average (°C)",
                color = "gray",
-               strokeWidth = 0.5)
+               strokeWidth = 0.5) %>%
+      dyLegend(width = 500)
   })  
   
   
   output$overviewGraph <- renderDygraph({
     
-    if(input$selectPrediction == 0){
+    if(input$selectPrediction == FALSE){
       x <- genOverview()
     } else {
       x <- rbind(genOverview(), genOverviewPrediction())
@@ -152,8 +158,8 @@ server <- function(input, output) {
             main = "World Temperatures and CO2 Concentration",
             xlab = "Year",
             ylab = "Temperatures (°C)") %>%
-      dyAxis("y", label = "Temperatures") %>%
-      dyAxis("y2", label = "CO2 Concentration (ppm)") %>%
+      dyAxis("y", label = "Temperatures", valueRange = c(7, 10.3)) %>%
+      dyAxis("y2", label = "CO2 Concentration (ppm)", valueRange = c(220, 451)) %>%
       dySeries("TenYearAvg",
                label = "Average Temp. (°C)",
                color = "red",
@@ -165,7 +171,7 @@ server <- function(input, output) {
                axis = ("y2")) %>%
       dyLegend(width = 460)
     
-    if(input$selectPrediction == 1){
+    if(input$selectPrediction == TRUE){
       dygraphPlot %>% dyShading(from = "2015", to = "2030", color = "#F3F781")
     } else {
       dygraphPlot
